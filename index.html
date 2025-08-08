@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>远离无聊</title>
+<title>远离无聊哦,李紫萱</title>
 <style>
     body {
         margin: 0;
@@ -16,9 +16,9 @@
     }
     #message {
         position: absolute;
-        bottom: 5%;
+        bottom: 10%;
         width: 100%;
-        font-size: 2em;
+        font-size: 4em;
         text-align: center;
         z-index: 2;
         text-shadow: 0 0 10px pink;
@@ -45,10 +45,10 @@
 <body>
 
 <div id="message"></div>
-<div id="musicTip">🎵 音乐开始了</div>
+<div id="musicTip">🎵</div>
 
 <audio id="bgm" loop>
-    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg">
+    <source src="bensound-romantic.mp3" type="audio/mpeg">
 </audio>
 
 <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
@@ -82,7 +82,6 @@ new Typed('#message', {
     loop: true
 });
 
-// ==== 3D 场景 ====
 let scene = new THREE.Scene();
 let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 let renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
@@ -128,6 +127,7 @@ let material = new THREE.MeshPhongMaterial({
 
 let heart = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, extrudeSettings), material);
 heart.rotation.x = Math.PI;
+heart.position.set(-8, -6, 0);
 scene.add(heart);
 
 // 红色外发光粒子环绕爱心
