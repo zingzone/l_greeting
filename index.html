@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>远离无聊</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: 'Microsoft YaHei', sans-serif;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transition: background-image 1s ease-in-out;
+    }
+    #message {
+        position: absolute;
+        bottom: 5%;
+        width: 100%;
+        font-size: 2em;
+        text-align: center;
+        z-index: 2;
+        text-shadow: 0 0 10px pink;
+        color: white;
+    }
+    #musicTip {
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 192, 203, 0.8);
+        color: white;
+        font-size: 1.8em;
+        padding: 15px 30px;
+        border-radius: 30px;
+        box-shadow: 0 0 15px pink;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 1.2s ease;
+        z-index: 9999;
+    }
+</style>
+</head>
+<body>
+
+<div id="message"></div>
+<div id="musicTip">🎵 音乐开始了</div>
+
+<audio id="bgm" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg">
+</audio>
+
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.156.1/build/three.min.js"></script>
+
+<script>
+
+let bgImages = [
+    'images/lzx1.jpeg',
+    'images/lzx2.jpeg',
+    'images/lzx3.jpeg',
+    'images/lzx4.jpeg'
+];
+let currentIndex = 0;
+function changeBackground() {
+    document.body.style.backgroundImage = `url('${bgImages[currentIndex]}')`;
+    currentIndex = (currentIndex + 1) % bgImages.length;
+}
+changeBackground();
+setInterval(changeBackground, 3000); 
+
+new Typed('#message', {
+    strings: [
+        "李紫萱你好 💖",
+        "很高兴认识你 ✨",
+        "愿你每天都被温柔对待 🌸",
+        "事事顺意，天天开心 ❤️"
+    ],
+    typeSpeed: 80,
+    backSpeed: 50,
+    loop: true
+});
+
+// ==== 3D 场景 ====
+let scene = new THREE.Scene();
+let camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+let renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// 粒子背景
+let particlesGeometry = new THREE.BufferGeometry();
+let particlesCount = 500;
+let posArray = new Float32Array(particlesCount * 3);
+for(let i=0; i<particlesCount*3; i++){
+    posArray[i] = (Math.random() - 0.5) * 50;
+}
+particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+let particlesMaterial = new THREE.PointsMaterial({
+    size: 0.1,
+    color: 0xffc0cb
+});
+let particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+scene.add(particlesMesh);
+
+// 爱心
+function createHeartShape() {
+    let x = 0, y = 0;
+    let heartShape = new THREE.Shape();
+    heartShape.moveTo( x + 0, y + 0 );
+    heartShape.bezierCurveTo( x + 0, y + 0, x - 3, y - 3, x - 3, y - 5 );
+    heartShape.bezierCurveTo( x - 3, y - 8, x + 0, y - 8, x + 0, y - 5 );
+    heartShape.bezierCurveTo( x + 0, y - 8, x + 3, y - 8, x + 3, y - 5 );
+    heartShape.bezierCurveTo( x + 3, y - 3, x + 0, y + 0, x + 0, y + 0 );
+    return heartShape;
+}
+let shape = createHeartShape();
+let extrudeSettings = { depth: 1, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.5, bevelThickness: 0.5 };
+
+let material = new THREE.MeshPhongMaterial({
+    color: 0xff0000,
+    shininess: 30,
+    specular: 0x550000,
+    emissive: 0xaa0000,
+    emissiveIntensity: 0.5
+});
+
+let heart = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, extrudeSettings), material);
+heart.rotation.x = Math.PI;
+scene.add(heart);
+
+// 红色外发光粒子环绕爱心
+let orbitParticlesGeometry = new THREE.BufferGeometry();
+let orbitCount = 100;
+let orbitPositions = new Float32Array(orbitCount * 3);
+let radius = 6;
+for (let i = 0; i < orbitCount; i++) {
+    let angle = (i / orbitCount) * Math.PI * 2;
+    orbitPositions[i * 3] = Math.cos(angle) * radius;
+    orbitPositions[i * 3 + 1] = (Math.random() - 0.5) * 2;
+    orbitPositions[i * 3 + 2] = Math.sin(angle) * radius;
+}
+orbitParticlesGeometry.setAttribute('position', new THREE.BufferAttribute(orbitPositions, 3));
+let orbitParticlesMaterial = new THREE.PointsMaterial({
+    size: 0.15,
+    color: 0xff0000,
+    transparent: true,
+    opacity: 0.8
+});
+let orbitParticles = new THREE.Points(orbitParticlesGeometry, orbitParticlesMaterial);
+scene.add(orbitParticles);
+
+// 光照
+let light1 = new THREE.PointLight(0xffffff, 1);
+light1.position.set(10, 10, 10);
+scene.add(light1);
+let light2 = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(light2);
+
+camera.position.z = 15;
+
+// 动画
+let clock = new THREE.Clock();
+function animate() {
+    requestAnimationFrame(animate);
+    let t = clock.getElapsedTime();
+    let scale = 1 + 0.1 * Math.sin(t * 4);
+    heart.scale.set(scale, scale, scale);
+    heart.rotation.y += 0.01;
+
+    particlesMesh.rotation.y += 0.001;
+    orbitParticles.rotation.y = t * 0.5;
+
+    renderer.render(scene, camera);
+}
+animate();
+
+document.addEventListener('click', function(e) {
+    let heartEl = document.createElement('div');
+    heartEl.style.position = 'absolute';
+    heartEl.style.left = e.clientX + 'px';
+    heartEl.style.top = e.clientY + 'px';
+    heartEl.style.fontSize = '20px';
+    heartEl.style.color = `hsl(${Math.random()*360},100%,70%)`;
+    heartEl.innerHTML = '❤';
+    document.body.appendChild(heartEl);
+    let rise = 0;
+    let interval = setInterval(() => {
+        rise++;
+        heartEl.style.top = (e.clientY - rise) + 'px';
+        heartEl.style.opacity = 1 - rise / 50;
+        if (rise > 50) {
+            clearInterval(interval);
+            heartEl.remove();
+        }
+    }, 16);
+});
+
+// 音乐自动播放控制和提示
+let bgm = document.getElementById("bgm");
+bgm.muted = true;
+bgm.volume = 1;
+bgm.play();
+
+const musicTip = document.getElementById('musicTip');
+
+document.addEventListener("click", () => {
+    bgm.muted = false;
+    bgm.play();
+
+    musicTip.style.opacity = "1";
+    setTimeout(() => {
+        musicTip.style.opacity = "0";
+    }, 2500);
+}, { once: true });
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>
